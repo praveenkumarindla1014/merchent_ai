@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vera Interactive Chat Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ece5dd;
+      --chat-bg: #fff;
+      --primary: #008069;
+      --header-bg: #075e54;
+      --msg-out: #dcf8c6;
+      --msg-in: #fff;
+      --text: #111b21;
+      --muted: #667781;
+    }
+    body { font-family: 'Inter', sans-serif; background: #d1d7db; margin: 0; display: flex; height: 100vh; align-items: center; justify-content: center; }
+    
+    .app-container {
+      display: flex; width: 100%; max-width: 1200px; height: 95vh; background: var(--chat-bg);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;
+    }
+
+    /* Sidebar controls */
+    .sidebar {
+      width: 350px; background: #f0f2f5; border-right: 1px solid #d1d7db; display: flex; flex-direction: column;
+    }
+    .sidebar-header {
+      background: var(--header-bg); color: white; padding: 20px; font-weight: 600; font-size: 18px;
+    }
+    .control-group { padding: 20px; border-bottom: 1px solid #d1d7db; }
+    .control-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+    .control-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; margin-bottom: 10px; }
+    .control-group button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+    .control-group button:hover { filter: brightness(1.1); }
+    .status-text { padding: 20px; font-size: 13px; color: var(--muted); }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative;
+    }
+    .chat-header {
+      background: #f0f2f5; padding: 15px 20px; border-bottom: 1px solid #d1d7db; display: flex; align-items: center; gap: 15px;
+    }
+    .avatar { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+    .chat-header-info h2 { margin: 0; font-size: 16px; color: var(--text); }
+    .chat-header-info p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+    .chat-messages {
+      flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+      background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    }
+
+    .message {
+      max-width: 65%; padding: 8px 12px; border-radius: 8px; font-size: 14.5px; line-height: 1.4; color: var(--text); position: relative;
+    }
+    .message.in { background: var(--msg-in); align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 0.5px rgba(11,20,26,0.13); }
+    .message.out { background: var(--msg-out); align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 0.5px rgba(11,20,26,0.13); }
+    
+    .message .sender { font-size: 11px; font-weight: 600; margin-bottom: 3px; }
+    .message.in .sender { color: #a855f7; }
+    .message.out .sender { color: #008069; }
+    
+    .message .time { font-size: 10px; color: var(--muted); float: right; margin: 8px 0 -5px 8px; }
+
+    .chat-input {
+      background: #f0f2f5; padding: 15px 20px; display: flex; gap: 10px; align-items: center;
+    }
+    .chat-input input {
+      flex: 1; padding: 15px 20px; border: none; border-radius: 30px; font-size: 15px; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .chat-input button {
+      width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="sidebar">
+      <div class="sidebar-header">Vera Chat Simulator</div>
+      
+      <div class="control-group">
+        <label>1. Initialize Bot State</label>
+        <button id="btnInit" onclick="initBot()">Load Datasets into Bot</button>
+      </div>
+
+      <div class="control-group">
+        <label>2. Select Context</label>
+        <select id="selMerchant"><option value="">-- Select Merchant --</option></select>
+        <select id="selCustomer"><option value="">-- Select Customer (Optional) --</option></select>
+        <select id="selTrigger"><option value="">-- Select Trigger --</option></select>
+        <button id="btnStart" onclick="startConversation()">Start Conversation</button>
+      </div>
+
+      <div class="status-text" id="statusLog">Status: Waiting to initialize...</div>
+    </div>
+
+    <div class="chat-area">
+      <div class="chat-header">
+        <div class="avatar" id="chatAvatar">V</div>
+        <div class="chat-header-info">
+          <h2 id="chatTitle">Vera AI</h2>
+          <p id="chatSubtitle">Select a context to begin chatting</p>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <!-- Messages go here -->
+      </div>
+
+      <div class="chat-input">
+        <input type="text" id="txtInput" placeholder="Type a message as the Merchant/Customer..." onkeypress="if(event.key === 'Enter') sendMessage()" disabled>
+        <button onclick="sendMessage()" id="btnSend" disabled>➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+    let currentConvId = null;
+    let currentRole = "merchant";
+    let turnCount = 1;
+
+    const log = (msg) => document.getElementById("statusLog").innerText = msg;
+
+    // Load data dropdowns
+    async function fetchDatasets() {
+      try {
+        const [merchants, customers, triggers] = await Promise.all([
+          fetch('/dataset/merchants_seed.json').then(r => r.json()),
+          fetch('/dataset/customers_seed.json').then(r => r.json()),
+          fetch('/dataset/triggers_seed.json').then(r => r.json())
+        ]);
+
+        const selM = document.getElementById("selMerchant");
+        merchants.merchants.forEach(m => selM.innerHTML += `<option value="${m.merchant_id}">${m.identity.name} (${m.category_slug})</option>`);
+
+        const selC = document.getElementById("selCustomer");
+        customers.customers.forEach(c => selC.innerHTML += `<option value="${c.customer_id}">${c.name}</option>`);
+
+        const selT = document.getElementById("selTrigger");
+        triggers.triggers.forEach(t => selT.innerHTML += `<option value="${t.id}">${t.kind} (${t.scope})</option>`);
+        
+        window.allData = { merchants, customers, triggers };
+      } catch (e) { log("Error loading datasets"); console.error(e); }
+    }
+
+    async function initBot() {
+      log("Initializing contexts...");
+      const cats = ["dentists", "salons", "restaurants", "gyms", "pharmacies"];
+      for (const cat of cats) {
+        const catData = await fetch(`/dataset/categories/${cat}.json`).then(r => r.json());
+        await fetch(API+'/v1/context', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({scope:'category', context_id:cat, version:Date.now(), payload:catData, delivered_at:new Date().toISOString()})});
+      }
+      for (const m of window.allData.merchants.merchants) {
+        await fetch(API+'/v1/context', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({scope:'merchant', context_id:m.merchant_id, version:Date.now(), payload:m, delivered_at:new Date().toISOString()})});
+      }
+      for (const c of window.allData.customers.customers) {
+        await fetch(API+'/v1/context', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({scope:'customer', context_id:c.customer_id, version:Date.now(), payload:c, delivered_at:new Date().toISOString()})});
+      }
+      for (const t of window.allData.triggers.triggers) {
+        const mod = {...t, expires_at: "2028-12-31T00:00:00Z"};
+        await fetch(API+'/v1/context', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({scope:'trigger', context_id:t.id, version:Date.now(), payload:mod, delivered_at:new Date().toISOString()})});
+      }
+      log("Bot is fully initialized! Select a context and click Start.");
+    }
+
+    function addMessage(text, type, sender) {
+      const msgs = document.getElementById("chatMessages");
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      msgs.innerHTML += `
+        <div class="message ${type}">
+          <div class="sender">${sender}</div>
+          ${text.replace(/\n/g, '<br>')}
+          <span class="time">${time}</span>
+        </div>
+      `;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    async function startConversation() {
+      const mId = document.getElementById("selMerchant").value;
+      const tId = document.getElementById("selTrigger").value;
+      if (!mId || !tId) return alert("Select at least Merchant and Trigger");
+
+      document.getElementById("chatMessages").innerHTML = "";
+      turnCount = 1;
+
+      const trigger = window.allData.triggers.triggers.find(t => t.id === tId);
+      currentRole = trigger.scope === "customer" ? "customer" : "merchant";
+      
+      const roleName = currentRole === "customer" 
+        ? document.getElementById("selCustomer").options[document.getElementById("selCustomer").selectedIndex].text 
+        : document.getElementById("selMerchant").options[document.getElementById("selMerchant").selectedIndex].text;
+
+      document.getElementById("chatTitle").innerText = `Chatting as: ${roleName}`;
+      document.getElementById("chatSubtitle").innerText = `Trigger: ${trigger.kind}`;
+      document.getElementById("txtInput").disabled = false;
+      document.getElementById("btnSend").disabled = false;
+
+      log("Running Tick to generate initial proactive message...");
+      const res = await fetch(API+'/v1/tick', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({now: new Date().toISOString(), available_triggers: [tId]})}).then(r=>r.json());
+      
+      if (res.actions && res.actions.length > 0) {
+        const action = res.actions[0];
+        currentConvId = action.conversation_id;
+        addMessage(action.body, "in", action.send_as === "vera" ? "Vera AI" : "Vera (on behalf of Merchant)");
+        log(`Conversation Started! Turn ${turnCount}`);
+      } else {
+        alert("Bot declined to send a message. Try another trigger or initialize again.");
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("txtInput");
+      const text = input.value.trim();
+      if (!text || !currentConvId) return;
+
+      addMessage(text, "out", "You");
+      input.value = "";
+      turnCount++;
+      log(`Sending reply...`);
+
+      const mId = document.getElementById("selMerchant").value;
+      const cId = document.getElementById("selCustomer").value || null;
+
+      try {
+        const res = await fetch(API+'/v1/reply', {
+          method:'POST', headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify({
+            conversation_id: currentConvId,
+            merchant_id: mId, customer_id: cId,
+            from_role: currentRole, message: text,
+            received_at: new Date().toISOString(), turn_number: turnCount
+          })
+        }).then(r => r.json());
+
+        turnCount++;
+        
+        if (res.action === "send") {
+          addMessage(res.body, "in", "Vera AI");
+          log(`Replied. Turn ${turnCount}`);
+        } else if (res.action === "wait") {
+          addMessage(`*[SYSTEM: Waiting ${res.wait_seconds}s before next contact]*`, "in", "System");
+          log(`Waiting state triggered.`);
+        } else if (res.action === "end") {
+          addMessage(`*[SYSTEM: Conversation ended]*<br>Rationale: ${res.rationale}`, "in", "System");
+          document.getElementById("txtInput").disabled = true;
+          document.getElementById("btnSend").disabled = true;
+          log(`Conversation ended.`);
+        }
+      } catch (e) {
+        log("Error sending reply");
+        console.error(e);
+      }
+    }
+
+    // Start
+    fetchDatasets();
+  </script>
+</body>
+</html>

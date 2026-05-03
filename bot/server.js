@@ -4,6 +4,8 @@
  */
 
 import express from "express";
+import { fileURLToPath } from "url";
+import path from "path";
 import { PORT, TEAM } from "./config.js";
 import {
   setContext, getContextCounts, getTrigger, getMerchant, getCustomer,
@@ -15,6 +17,10 @@ import { composeMessage, composeReply, detectAutoReply } from "./composer.js";
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/dataset", express.static(path.join(__dirname, "..", "dataset")));
 
 const START = Date.now();
 
@@ -39,6 +45,9 @@ app.get("/", (_req, res) => {
           <div class="badge">● ONLINE</div>
           <h1>Vera Merchant AI Assistant</h1>
           <p>Your API Server is successfully running on Render.</p>
+          
+          <a href="/chat.html" style="display:inline-block; background: #22c55e; color: #000; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-bottom: 20px;">💬 Open Interactive Chat Simulator</a>
+          
           <code>
             // Available Endpoints<br>
             GET  /v1/healthz<br>
