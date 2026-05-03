@@ -25,6 +25,10 @@ app.use("/dataset", express.static(path.join(__dirname, "..", "dataset")));
 
 const START = Date.now();
 
+// ─── Root redirect ─────────────────────────────────────────────────────────
+
+app.get("/", (_req, res) => res.redirect("/demo.html"));
+
 // ─── GET /v1/healthz ───────────────────────────────────────────────────────
 
 app.get("/v1/healthz", (_req, res) => {
