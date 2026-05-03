@@ -4,8 +4,6 @@
  */
 
 import express from "express";
-import { fileURLToPath } from "url";
-import path from "path";
 import { PORT, TEAM } from "./config.js";
 import {
   setContext, getContextCounts, getTrigger, getMerchant, getCustomer,
@@ -18,16 +16,24 @@ import { composeMessage, composeReply, detectAutoReply } from "./composer.js";
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-// Serve demo UI + dataset
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-app.use(express.static(__dirname));
-app.use("/dataset", express.static(path.join(__dirname, "..", "dataset")));
-
 const START = Date.now();
 
-// ─── Root redirect ─────────────────────────────────────────────────────────
+// ─── Root — API info ───────────────────────────────────────────────────────
 
-app.get("/", (_req, res) => res.redirect("/demo.html"));
+app.get("/", (_req, res) => {
+  res.json({
+    name: "Vera Merchant AI Assistant",
+    status: "running",
+    team: TEAM.team_name,
+    endpoints: [
+      "GET  /v1/healthz",
+      "GET  /v1/metadata",
+      "POST /v1/context",
+      "POST /v1/tick",
+      "POST /v1/reply",
+    ],
+  });
+});
 
 // ─── GET /v1/healthz ───────────────────────────────────────────────────────
 
