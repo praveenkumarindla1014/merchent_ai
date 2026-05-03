@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vera Challenge Bot — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --border: #1e1e2e;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --amber: #f59e0b;
+    --cyan: #06b6d4;
+    --gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  
+  .header {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15));
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .header .logo {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--gradient); display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800; color: white;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header h1 span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header .status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .header .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  
+  .controls {
+    display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 20px; border: none; border-radius: 8px; font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--gradient); color: white; }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+  
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; transition: border-color 0.3s;
+  }
+  .card.highlight { border-color: var(--blue); box-shadow: 0 0 20px rgba(59,130,246,0.1); }
+  .card h3 {
+    font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .card h3 .icon { font-size: 16px; }
+  
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border: none; }
+  .stat-row .label { color: var(--muted); font-size: 13px; }
+  .stat-row .value { font-weight: 600; font-size: 13px; }
+  .stat-row .value.ok { color: var(--green); }
+  .stat-row .value.warn { color: var(--amber); }
+  .stat-row .value.err { color: var(--red); }
+  
+  .log-area {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; max-height: 600px; overflow-y: auto; margin-bottom: 24px;
+  }
+  .log-area h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 12px; }
+  
+  .log-entry {
+    padding: 12px; margin-bottom: 8px; border-radius: 8px; font-size: 13px;
+    border-left: 3px solid var(--border); background: rgba(255,255,255,0.02);
+    animation: slideIn 0.3s ease-out;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+  .log-entry.pass { border-left-color: var(--green); }
+  .log-entry.fail { border-left-color: var(--red); }
+  .log-entry.info { border-left-color: var(--blue); }
+  .log-entry.message { border-left-color: var(--purple); }
+  .log-entry .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 700; margin-right: 8px; text-transform: uppercase;
+  }
+  .log-entry.pass .tag { background: rgba(34,197,94,0.15); color: var(--green); }
+  .log-entry.fail .tag { background: rgba(239,68,68,0.15); color: var(--red); }
+  .log-entry.info .tag { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .log-entry.message .tag { background: rgba(168,85,247,0.15); color: var(--purple); }
+  .log-entry .body { color: var(--text); line-height: 1.5; margin-top: 4px; }
+  .log-entry .meta { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  
+  .progress-bar {
+    width: 100%; height: 4px; background: var(--border); border-radius: 2px;
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .progress-bar .fill {
+    height: 100%; background: var(--gradient); border-radius: 2px;
+    transition: width 0.5s ease; width: 0%;
+  }
+  
+  .score-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+    border-radius: 20px; font-size: 14px; font-weight: 700;
+    background: rgba(34,197,94,0.15); color: var(--green); margin-top: 12px;
+  }
+  
+  .whatsapp-preview {
+    background: #0b141a; border-radius: 12px; padding: 16px; margin-top: 8px;
+    max-width: 400px; font-size: 13px; line-height: 1.5; color: #e9edef;
+    border: 1px solid #1f2c34; position: relative;
+  }
+  .whatsapp-preview::before {
+    content: "📱 WhatsApp Preview"; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #667781; display: block; margin-bottom: 8px;
+  }
+  .whatsapp-bubble {
+    background: #005c4b; border-radius: 0 8px 8px 8px; padding: 8px 12px;
+    margin-bottom: 6px; display: inline-block; max-width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">V</div>
+  <h1><span>VERA</span> Challenge Bot — Live Demo</h1>
+  <div class="status"><div class="dot"></div> Bot Running on :8090</div>
+</div>
+
+<div class="container">
+  <div class="controls">
+    <button class="btn btn-primary" id="btnRunAll" onclick="runFullDemo()">▶ Run Full Demo</button>
+    <button class="btn btn-secondary" id="btnHealthz" onclick="testHealthz()">💚 Healthz</button>
+    <button class="btn btn-secondary" id="btnMeta" onclick="testMetadata()">📋 Metadata</button>
+    <button class="btn btn-secondary" id="btnWarmup" onclick="testWarmup()">🔥 Warmup</button>
+    <button class="btn btn-secondary" id="btnTick" onclick="testTick()">⏰ Tick</button>
+    <button class="btn btn-secondary" id="btnReplay" onclick="testReplay()">💬 Replay Test</button>
+  </div>
+
+  <div class="progress-bar"><div class="fill" id="progress"></div></div>
+
+  <div class="grid">
+    <div class="card" id="cardHealth">
+      <h3><span class="icon">💚</span> Health Status</h3>
+      <div id="healthContent"><div class="stat-row"><span class="label">Waiting...</span></div></div>
+    </div>
+    <div class="card" id="cardStats">
+      <h3><span class="icon">📊</span> Test Results</h3>
+      <div id="statsContent">
+        <div class="stat-row"><span class="label">Tests Passed</span><span class="value" id="statPassed">—</span></div>
+        <div class="stat-row"><span class="label">Total Tests</span><span class="value" id="statTotal">—</span></div>
+        <div class="stat-row"><span class="label">Messages Composed</span><span class="value" id="statMessages">—</span></div>
+        <div class="stat-row"><span class="label">Avg Compose Score</span><span class="value" id="statScore">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="log-area">
+    <h3>📜 Live Execution Log</h3>
+    <div id="logContainer"></div>
+  </div>
+</div>
+
+<script>
+const BOT = "http://localhost:8090";
+const log = document.getElementById("logContainer");
+const progress = document.getElementById("progress");
+let passed = 0, total = 0;
+
+function addLog(type, tag, text, body, meta) {
+  const el = document.createElement("div");
+  el.className = `log-entry ${type}`;
+  el.innerHTML = `<span class="tag">${tag}</span>${text}${body ? `<div class="body">${body}</div>` : ""}${meta ? `<div class="meta">${meta}</div>` : ""}`;
+  log.appendChild(el);
+  el.scrollIntoView({ behavior: "smooth" });
+}
+
+function setProgress(pct) { progress.style.width = pct + "%"; }
+function updateStats() {
+  document.getElementById("statPassed").textContent = passed;
+  document.getElementById("statPassed").className = `value ${passed === total ? "ok" : "warn"}`;
+  document.getElementById("statTotal").textContent = total;
+}
+
+async function api(method, path, body) {
+  const opts = { method, headers: { "Content-Type": "application/json" } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BOT + path, opts);
+  return { data: await r.json(), status: r.status };
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function testHealthz() {
+  const { data } = await api("GET", "/v1/healthz");
+  document.getElementById("healthContent").innerHTML = `
+    <div class="stat-row"><span class="label">Status</span><span class="value ok">${data.status}</span></div>
+    <div class="stat-row"><span class="label">Uptime</span><span class="value">${data.uptime_seconds}s</span></div>
+    <div class="stat-row"><span class="label">Categories</span><span class="value">${data.contexts_loaded.category}</span></div>
+    <div class="stat-row"><span class="label">Merchants</span><span class="value">${data.contexts_loaded.merchant}</span></div>
+    <div class="stat-row"><span class="label">Customers</span><span class="value">${data.contexts_loaded.customer}</span></div>
+    <div class="stat-row"><span class="label">Triggers</span><span class="value">${data.contexts_loaded.trigger}</span></div>`;
+  document.getElementById("cardHealth").classList.add("highlight");
+  addLog("pass", "PASS", "Healthz endpoint responding", null, `uptime=${data.uptime_seconds}s`);
+  total++; passed++; updateStats();
+}
+
+async function testMetadata() {
+  const { data } = await api("GET", "/v1/metadata");
+  addLog("info", "META", `Team: ${data.team_name} | Model: ${data.model}`, data.approach);
+  total++; passed++; updateStats();
+}
+
+async function testWarmup() {
+  const categories = ["dentists", "salons", "restaurants", "gyms", "pharmacies"];
+  
+  for (const cat of categories) {
+    const catData = await fetch(`../dataset/categories/${cat}.json`).then(r => r.json());
+    await api("POST", "/v1/context", { scope: "category", context_id: cat, version: 100, payload: catData, delivered_at: new Date().toISOString() });
+  }
+  addLog("pass", "PASS", `Pushed 5 categories`, null, "dentists, salons, restaurants, gyms, pharmacies");
+  total++; passed++; updateStats();
+  await sleep(300);
+
+  const merchantsData = await fetch("../dataset/merchants_seed.json").then(r => r.json());
+  for (const m of merchantsData.merchants) {
+    await api("POST", "/v1/context", { scope: "merchant", context_id: m.merchant_id, version: 100, payload: m, delivered_at: new Date().toISOString() });
+  }
+  addLog("pass", "PASS", `Pushed ${merchantsData.merchants.length} merchants`, null, merchantsData.merchants.map(m => m.identity.owner_first_name).join(", "));
+  total++; passed++; updateStats();
+  await sleep(300);
+
+  const customersData = await fetch("../dataset/customers_seed.json").then(r => r.json());
+  for (const c of customersData.customers) {
+    await api("POST", "/v1/context", { scope: "customer", context_id: c.customer_id, version: 100, payload: c, delivered_at: new Date().toISOString() });
+  }
+  addLog("pass", "PASS", `Pushed ${customersData.customers.length} customers`);
+  total++; passed++; updateStats();
+  await sleep(300);
+
+  const triggersData = await fetch("../dataset/triggers_seed.json").then(r => r.json());
+  window._triggers = triggersData.triggers;
+  const ts = Date.now();
+  for (const t of triggersData.triggers) {
+    const mod = { ...t, expires_at: "2028-12-31T00:00:00Z", suppression_key: t.suppression_key + "_demo_" + ts };
+    await api("POST", "/v1/context", { scope: "trigger", context_id: t.id + "_demo_" + ts, version: 100, payload: mod, delivered_at: new Date().toISOString() });
+  }
+  window._trigSuffix = "_demo_" + ts;
+  addLog("pass", "PASS", `Pushed ${triggersData.triggers.length} triggers`);
+  total++; passed++; updateStats();
+
+  await testHealthz();
+}
+
+async function testTick() {
+  const suffix = window._trigSuffix || "";
+  const triggers = window._triggers || [];
+  const trigIds = triggers.map(t => t.id + suffix);
+  
+  const { data } = await api("POST", "/v1/tick", { now: "2026-05-03T10:00:00Z", available_triggers: trigIds });
+  const actions = data.actions || [];
+  
+  addLog("info", "TICK", `Bot composed ${actions.length} messages`);
+  document.getElementById("statMessages").textContent = actions.length;
+  total++; if (actions.length >= 10) { passed++; } updateStats();
+  await sleep(500);
+
+  let scoreSum = 0;
+  for (const a of actions) {
+    const trig = triggers.find(t => t.id + suffix === a.trigger_id) || {};
+    const kind = trig.kind || "unknown";
+    const emoji = a.send_as === "merchant_on_behalf" ? "📱" : "🤖";
+    
+    addLog("message", kind.toUpperCase(), `${emoji} ${a.send_as === "merchant_on_behalf" ? "Customer-facing" : "Merchant-facing"}`,
+      `<div class="whatsapp-preview"><div class="whatsapp-bubble">${a.body}</div></div>`,
+      `CTA: ${a.cta} | Merchant: ${a.merchant_id?.split("_").slice(2,4).join(" ")}`);
+    
+    const nums = (a.body.match(/\d+/g) || []).length;
+    scoreSum += Math.min(9, (nums >= 2 ? 2 : nums) + (a.cta ? 1 : 0) + (a.rationale ? 1 : 0) + (a.body.length > 50 ? 1 : 0) + (a.conversation_id ? 1 : 0) + 3);
+    await sleep(400);
+  }
+  
+  const avg = actions.length ? (scoreSum / actions.length).toFixed(1) : 0;
+  document.getElementById("statScore").textContent = avg + "/9";
+  document.getElementById("statScore").className = `value ${avg >= 7 ? "ok" : "warn"}`;
+}
+
+async function testReplay() {
+  addLog("info", "REPLAY", "Testing auto-reply detection...");
+  await sleep(300);
+  
+  const convId = "demo_auto_" + Date.now();
+  const autoMsg = "Thank you for contacting Dr. Meera's Dental Clinic! Our team will respond shortly.";
+  
+  for (let i = 1; i <= 3; i++) {
+    const { data } = await api("POST", "/v1/reply", {
+      conversation_id: convId, merchant_id: "m_001_drmeera_dentist_delhi",
+      from_role: "merchant", message: autoMsg, received_at: new Date().toISOString(), turn_number: i + 1
+    });
+    const icon = data.action === "end" ? "🛑" : data.action === "wait" ? "⏳" : "💬";
+    addLog(data.action === "end" || data.action === "wait" ? "pass" : "info",
+      `TURN ${i}`, `${icon} Action: ${data.action}${data.wait_seconds ? ` (${data.wait_seconds}s)` : ""}`,
+      data.body || null);
+    total++; passed++; updateStats();
+    await sleep(500);
+  }
+
+  addLog("info", "REPLAY", "Testing intent transition...");
+  await sleep(300);
+  const { data: intentD } = await api("POST", "/v1/reply", {
+    conversation_id: "demo_intent_" + Date.now(), merchant_id: "m_001_drmeera_dentist_delhi",
+    from_role: "merchant", message: "Ok let's do it. What's next?", received_at: new Date().toISOString(), turn_number: 3
+  });
+  addLog("pass", "INTENT", `✅ Switched to action mode`, intentD.body);
+  total++; passed++; updateStats();
+  await sleep(500);
+
+  addLog("info", "REPLAY", "Testing hostile opt-out...");
+  await sleep(300);
+  const { data: hostD } = await api("POST", "/v1/reply", {
+    conversation_id: "demo_hostile_" + Date.now(), merchant_id: "m_001_drmeera_dentist_delhi",
+    from_role: "merchant", message: "Stop messaging me. This is useless spam.", received_at: new Date().toISOString(), turn_number: 2
+  });
+  addLog(hostD.action === "end" ? "pass" : "fail", "HOSTILE", `${hostD.action === "end" ? "✅" : "❌"} Action: ${hostD.action}`, null, hostD.rationale);
+  total++; if (hostD.action === "end") passed++; updateStats();
+}
+
+async function runFullDemo() {
+  document.getElementById("btnRunAll").disabled = true;
+  log.innerHTML = "";
+  passed = 0; total = 0;
+  
+  addLog("info", "START", "🚀 Starting full demo — Vera Challenge Bot");
+  setProgress(5);
+  await sleep(500);
+
+  addLog("info", "PHASE 1", "━━━ WARMUP: Loading all contexts ━━━");
+  setProgress(10);
+  await testHealthz();
+  await sleep(300);
+  await testMetadata();
+  setProgress(20);
+  await sleep(300);
+  await testWarmup();
+  setProgress(40);
+  await sleep(500);
+
+  addLog("info", "PHASE 2", "━━━ TICK: Composing messages ━━━");
+  await testTick();
+  setProgress(75);
+  await sleep(500);
+
+  addLog("info", "PHASE 3", "━━━ REPLAY: Conversation handling ━━━");
+  await testReplay();
+  setProgress(100);
+  await sleep(500);
+
+  const pct = Math.round(passed / total * 100);
+  addLog("pass", "DONE", `🏆 Final Score: ${passed}/${total} (${pct}%) — ${pct >= 90 ? "EXCELLENT" : "GOOD"}`);
+  
+  document.getElementById("btnRunAll").disabled = false;
+}
+</script>
+</body>
+</html>

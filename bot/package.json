@@ -1,0 +1,14 @@
+{
+  "name": "vera-challenge-bot",
+  "version": "1.0.0",
+  "description": "magicpin AI Challenge — Vera Merchant AI Assistant Bot",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

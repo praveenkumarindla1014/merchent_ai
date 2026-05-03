@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Dataset expanded output (generated, not needed)
+dataset/expanded/
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Gemini/AI tool metadata
+.gemini/
