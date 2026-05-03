@@ -1,0 +1,14 @@
+{
+  "name": "vera-merchant-ai",
+  "version": "1.0.0",
+  "description": "Vera Merchant AI Assistant — magicpin Challenge",
+  "type": "module",
+  "scripts": {
+    "start": "node bot/server.js",
+    "dev": "node --watch bot/server.js",
+    "test": "node bot/test_judge.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
