@@ -21,18 +21,36 @@ const START = Date.now();
 // ─── Root — API info ───────────────────────────────────────────────────────
 
 app.get("/", (_req, res) => {
-  res.json({
-    name: "Vera Merchant AI Assistant",
-    status: "running",
-    team: TEAM.team_name,
-    endpoints: [
-      "GET  /v1/healthz",
-      "GET  /v1/metadata",
-      "POST /v1/context",
-      "POST /v1/tick",
-      "POST /v1/reply",
-    ],
-  });
+  res.send(`
+    <html>
+      <head>
+        <title>Vera API - Running</title>
+        <style>
+          body { font-family: sans-serif; background: #111; color: #eee; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+          .card { background: #222; padding: 30px; border-radius: 10px; border-top: 4px solid #22c55e; text-align: center; }
+          h1 { margin: 0 0 10px 0; font-size: 24px; color: #22c55e; }
+          p { color: #aaa; margin: 0 0 20px 0; }
+          .badge { display: inline-block; background: rgba(34,197,94,0.2); color: #22c55e; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+          code { display: block; text-align: left; background: #000; padding: 15px; border-radius: 5px; color: #0ea5e9; font-size: 13px; line-height: 1.5; }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <div class="badge">● ONLINE</div>
+          <h1>Vera Merchant AI Assistant</h1>
+          <p>Your API Server is successfully running on Render.</p>
+          <code>
+            // Available Endpoints<br>
+            GET  /v1/healthz<br>
+            GET  /v1/metadata<br>
+            POST /v1/context<br>
+            POST /v1/tick<br>
+            POST /v1/reply
+          </code>
+        </div>
+      </body>
+    </html>
+  `);
 });
 
 // ─── GET /v1/healthz ───────────────────────────────────────────────────────
